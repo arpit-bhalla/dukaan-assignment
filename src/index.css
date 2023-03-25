@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: Galano Grotesque;
+    font-weight: 400;
+    src: url(/fonts/galanogrotesque-regular.otf) format("opentype");
+  }
+
+  @font-face {
+    font-family: Galano Grotesque;
+    font-weight: 500;
+    src: url(/fonts/galanogrotesque-medium.otf) format("opentype");
+  }
+
+  @font-face {
+    font-family: Galano Grotesque;
+    font-weight: 600;
+    src: url(/fonts/galanogrotesque-semibold.otf) format("opentype");
+  }
+}
