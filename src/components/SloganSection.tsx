@@ -46,7 +46,7 @@ export function SloganSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mt-8 mb-12">
         {slogans.map((slogan, index) => (
-          <SloganCard title={slogan} key={index} />
+          <SloganCard title={slogan} key={index} index={index} />
         ))}
       </div>
 
