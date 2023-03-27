@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import image from "./assets/logo/white.svg";
 
 function App() {
@@ -23,39 +23,16 @@ function App() {
               Simply enter a term that describes your business, and get up to
               1,000 relevant slogans for free.
             </div>
-            <div className="">Word for your slogan</div>
-            <div>
-              <input className="border-2 py-2 px-4" />
-            </div>
-            <button className="bg-primary text-white py-2 px-6 rounded-sm my-12">
-              Generate slogans
-            </button>
-            <div className="flex items-center">
-              <div className="flex-grow">
-                We have generated 1,023 slogans for “cozy”
-              </div>
-              <button className="border-primary border text-primary py-2 px-6 rounded-sm">
-                Download all
-              </button>
-            </div>
-            <div className="flex justify-between text-primary">
-              <div>&lsaquo; Prev</div>
-              <div className="flex gap-1">
-                <PaginationBadge value={1} />
-                <PaginationBadge value={2} selected />
-                <PaginationBadge value={3} />
-                <PaginationBadge value={"..."} />
-                <PaginationBadge value={21} />
-              </div>
-              <div>Next &rsaquo;</div>
-            </div>
+            <div className="mb-1">Word for your slogan</div>
+
+            <SloganSection />
           </div>
         </div>
       </Container>
 
       <div className="relative mt-20">
         <div className="bg-primary opacity-5 absolute h-full w-full" />
-        <Container className="flex text-center py-16">
+        <Container className="flex text-center py-16 gap-x-8">
           {features.map(([title, summary], index) => (
             <FeatureCard {...{ title, summary }} img={index + 1} key={index} />
           ))}
@@ -79,15 +56,21 @@ function App() {
 
       <footer className="bg-black text-white">
         <Container className="pt-16">
-          <div className="flex mb-10">
-            <div className="w-80">
+          <div className="flex mb-10 text-lg gap-x-5">
+            <div style={{ flex: 2 }}>
               <img src={image} />
             </div>
-            {footer.map((row) => (
-              <div className="flex-1">
-                {row.map((item) => (
-                  <a className="block">
-                    {item} {item === "Jobs" ? <Badge value={3} /> : null}
+            {footer.map((row, index) => (
+              <div className="flex-1" key={index}>
+                {row.map((item, index) => (
+                  <a className="block" key={index}>
+                    {item}{" "}
+                    {item === "Jobs" ? (
+                      <Badge
+                        value={"3"}
+                        className="bg-white text-black h-5 w-5"
+                      />
+                    ) : null}
                   </a>
                 ))}
               </div>
@@ -105,14 +88,74 @@ function App() {
 
 export default App;
 
-const PaginationBadge = ({ selected = false, ...rest }) =>
+const PaginationBadge = ({ selected = false, disabled = false, ...rest }) =>
   React.createElement(Badge, {
     className:
-      "cursor-pointer " +
-      (selected ? "bg-primary text-white" : "hover:bg-slate-100"),
-    size: 6,
+      "cursor-pointer h-6 w-6 " +
+      (selected ? "bg-primary text-white" : "hover:bg-slate-100") +
+      (disabled ? " hover:bg-white text-slate-500 cursor-default" : ""),
     ...rest,
   });
+
+const Pagination = ({ onChange = (page: number) => {}, totalPages = 21 }) => {
+  const [currPage, setCurrPage] = useState(2);
+
+  const getPages = () => {
+    if (currPage < 3) {
+      return [1, 2, 3, "...", totalPages];
+    }
+    if (currPage >= totalPages - 2) {
+      return [1, "...", totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [currPage - 1, currPage, currPage + 1, "...", totalPages];
+  };
+
+  function changePage(pageNumber: number) {
+    setCurrPage(pageNumber);
+    onChange?.(pageNumber);
+  }
+
+  return (
+    <div className="flex justify-between text-primary mt-6">
+      <div
+        className={"cursor-pointer " + (currPage === 1 ? "invisible" : "")}
+        onClick={() => (currPage > 1 ? changePage(currPage - 1) : undefined)}
+      >
+        &lsaquo; Prev
+      </div>
+
+      <div
+        className="flex gap-1"
+        onClick={(ev) => {
+          const span = ev.target as HTMLSpanElement;
+          const pageNumber = Number(span.dataset.page);
+          if (isNaN(pageNumber)) return;
+          changePage(pageNumber);
+        }}
+      >
+        {getPages().map((pageNumber) => (
+          <PaginationBadge
+            value={pageNumber}
+            key={pageNumber}
+            disabled={pageNumber === "..."}
+            selected={pageNumber === currPage}
+            data-page={pageNumber}
+          />
+        ))}
+      </div>
+      <div
+        className={
+          "cursor-pointer " + (currPage === totalPages ? "invisible" : "")
+        }
+        onClick={() =>
+          currPage < totalPages ? changePage(currPage + 1) : undefined
+        }
+      >
+        Next &rsaquo;
+      </div>
+    </div>
+  );
+};
 
 const Container = ({
   children,
@@ -124,38 +167,130 @@ const Container = ({
   <div className={"container max-w-6xl mx-auto " + className}>{children}</div>
 );
 
-function Badge({ value = "", className = "bg-white text-black", size = 5 }) {
+function SloganSection() {
+  const searchQuery = useRef("cozy");
+  const [slogans, setSlogans] = useState<string[]>([]);
+
+  const fetchSlogan = async (pageNumber?: number) => {
+    const fetchedSlogans = await sloganAPI(pageNumber);
+    setSlogans(fetchedSlogans);
+  };
+
+  useEffect(() => {
+    fetchSlogan();
+  }, []);
+
+  return (
+    <div>
+      <div>
+        <input
+          type={"search"}
+          defaultValue={searchQuery.current}
+          className="border py-2 px-4 w-80"
+          onChange={(event) => (searchQuery.current = event.target.value)}
+        />
+      </div>
+      <button
+        className="bg-primary text-white py-2 px-6 rounded my-12"
+        onClick={fetchSlogan.bind(null, 1)}
+      >
+        Generate slogans
+      </button>
+      <Hr />
+      <div className="flex items-center mt-12">
+        <div className="flex-grow">
+          We have generated {Math.floor(Math.random() * 1e3)} slogans for “
+          {searchQuery.current}”
+        </div>
+        <button className="border-primary border text-primary py-2 px-6 rounded-sm">
+          Download all
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-8 mt-8 mb-12">
+        {slogans.map((slogan, index) => (
+          <SloganCard title={slogan} key={index} />
+        ))}
+      </div>
+
+      <Hr />
+      <Pagination onChange={fetchSlogan} />
+    </div>
+  );
+}
+
+const Hr = () => (
+  <div
+    className="block  w-full"
+    style={{ background: "#D9D9D9", height: "1px" }}
+  />
+);
+
+function Badge({
+  value = "",
+  className = "bg-white text-black",
+  size = 5,
+  ...rest
+}) {
   return (
     <span
       className={
         `inline-flex justify-center items-center rounded-xl text-sm w-${size} h-${size} ` +
         className
       }
+      {...rest}
     >
       {value}
     </span>
   );
 }
 
-function ProductCard({ title, summary, index }) {
+function ProductCard({
+  title,
+  summary,
+  index,
+}: {
+  title: string;
+  summary: string;
+  index: number;
+}) {
   return (
     <div>
       <img src={`/images/prod-${index}.png`} />
+      <div className="text-xl mt-4 mb-1">{title}</div>
+      <div className="text-slate-500">{summary}</div>
+    </div>
+  );
+}
+
+function FeatureCard({
+  img,
+  title,
+  summary,
+}: {
+  img: number;
+  title: string;
+  summary: string;
+}) {
+  return (
+    <div className="flex-1 flex flex-col items-center">
+      <img src={`/images/feat-${img}.png`} className="w-14 mb-9" />
       <div className="text-xl">{title}</div>
       <div className="text-slate-500">{summary}</div>
     </div>
   );
 }
 
-function FeatureCard({ img, title, summary }) {
+const SloganCard = ({ title = "" }) => {
   return (
-    <div className="flex-1">
-      <img src={`/images/feat-${img}.png`} />
-      <div className="text-xl">{title}</div>
-      <div className="text-slate-500">{summary}</div>
+    <div
+      style={{ backgroundColor: "#F2F2F2" }}
+      className="px-4 py-2 cursor-pointer text-slate-900 h-16 flex items-center"
+    >
+      {title}
     </div>
   );
-}
+};
 
 const footer = [
   ["Contact", "FAQ's"],
@@ -195,3 +330,19 @@ const products = [
     "Stock your store with 100s of products and start selling to customers in minutes, without the hassle of inventory or packaging.",
   ],
 ];
+
+const slogans = [
+  "There is no Sore it will Not Heal, No cool it will not Subdue.",
+  "Review the facts cool is the best.",
+  "coziness building for tomorrow",
+];
+
+const sloganAPI = (pageNumber?: number) =>
+  new Promise<string[]>((resolve, reject) => {
+    const arr: string[] = Array.from({ length: 18 });
+    resolve(
+      arr.map(() => {
+        return slogans[Math.floor(Math.random() * slogans.length)];
+      })
+    );
+  });
