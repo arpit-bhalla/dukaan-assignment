@@ -21,7 +21,7 @@ function App() {
           </a>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md">
+        <div className="bg-white rounded-lg shadow-md p-2 md:p-0">
           <div className="container max-w-3xl mx-auto py-16 ">
             <div className="text-4xl font-semibold">Free slogan maker</div>
             <div className="text-xl mb-12 text-slate-500 mt-4">
@@ -37,18 +37,18 @@ function App() {
 
       <div className="relative mt-20">
         <div className="bg-primary opacity-5 absolute h-full w-full" />
-        <Container className="flex text-center py-16 gap-x-8">
+        <Container className="grid grid-cols-1 md:grid-cols-3 text-center py-16 md:gap-x-8 gap-y-8">
           {features.map(([title, summary], index) => (
             <FeatureCard {...{ title, summary }} img={index + 1} key={index} />
           ))}
         </Container>
       </div>
 
-      <Container className="py-20">
-        <div className="mb-12 font-semibold text-4xl">
+      <Container className="py-20 p-2 md:px-0">
+        <div className="mb-12 font-semibold text-4xl ">
           Try our other free products
         </div>
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {products.map(([title, summary], index) => (
             <ProductCard
               {...{ title, summary }}
@@ -61,7 +61,7 @@ function App() {
 
       <footer className="bg-black text-white">
         <Container className="pt-16">
-          <div className="flex mb-10 text-lg gap-x-5">
+          <div className="flex mb-10 text-lg gap-x-5 flex-col px-6 md:flex-row md:px-0">
             <div style={{ flex: 2 }}>
               <img src={image} />
             </div>
