@@ -38,7 +38,8 @@ jobs:
           node-version: 16
       - run: |
             yarn
-            yarn build
+            echo "${{ github.event.repository.name }}"
+            yarn build --base=${{ github.event.repository.name }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
